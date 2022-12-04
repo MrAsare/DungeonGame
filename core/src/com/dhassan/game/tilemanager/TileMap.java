@@ -1,7 +1,6 @@
 package com.dhassan.game.tilemanager;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ai.pfa.Connection;
 import com.badlogic.gdx.ai.pfa.DefaultGraphPath;
 import com.badlogic.gdx.ai.pfa.GraphPath;
@@ -9,14 +8,17 @@ import com.badlogic.gdx.ai.pfa.indexed.IndexedAStarPathFinder;
 import com.badlogic.gdx.ai.pfa.indexed.IndexedGraph;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.dhassan.game.ICollidable;
+import com.dhassan.game.eventhandler.input.InputArgs;
+import com.dhassan.game.eventhandler.render.RenderArgs;
+import com.dhassan.game.utils.B2dUtil;
 import com.dhassan.game.utils.IntPair;
 import com.dhassan.game.item.ItemStack;
 import com.dhassan.game.item.WorldItemStack;
@@ -26,17 +28,19 @@ import com.dhassan.game.tilemanager.astar.TileHeuristic;
 import com.dhassan.game.tilemanager.tiles.*;
 
 import java.util.*;
+import java.util.function.Consumer;
 
-import static com.dhassan.game.screens.PlayScreen.TILE_SIZE;
+import static com.dhassan.game.screens.PlayScreen.*;
 
 
 public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
     private final LinkedList<WorldItemStack> worldDrops = new LinkedList<>();
-    private final World world;
+    private  World world;
     private final EnumMap<Layer, TileMapObject[]> mapLayers = new EnumMap<>(Layer.class);
     private final LinkedList<Body> destroyList = new LinkedList<>();
     protected float xPos,yPos,tileSize;
     protected int tileCountX,tileCountY;
+    protected Camera camera;
 
     public PlayScreen getScreen() {
         return screen;
@@ -52,24 +56,23 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
 
     private final TileHeuristic tileHeuristic = new TileHeuristic();
     private final ObjectMap<TileMapObject, Array<Connection<TileMapObject>>> connectionsMap = new ObjectMap<>();
-//    private GraphPath<TileMapObject> tilePath;
-//    private static final int UpdatesPerSecond =20;
-//    private static float time=0f;
 
 
 
-    public TileMap(PlayScreen screen, World world, float posX, float posY, float tileSize, int tileCountX, int tileCountY) {
+    public TileMap(PlayScreen screen, World world, float tileSize, int tileCountX, int tileCountY) {
         Arrays.stream(Layer.values()).forEach(layer -> mapLayers.put(layer, new TileMapObject[tileCountX * tileCountY]));
-        xPos = posX;
-        yPos = posY;
+        xPos = 0;
+        yPos = 0;
         this.screen = screen;
         this.world = world;
         this.tileSize = tileSize;
         this.tileCountX = tileCountX;
         this.tileCountY = tileCountY;
+        createBorder();
     }
 
-    public void init(){
+    public void init(Camera camera){
+        this.camera = camera;
         setBackgroundTiles();
     }
 
@@ -105,6 +108,16 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
     @Override
     public void open() {
 
+    }
+
+    private void createBorder() {
+        BodyDef def = new BodyDef();
+        Body body = world.createBody(def);
+        def.type = BodyDef.BodyType.StaticBody;
+        B2dUtil.addRectangleFixture(body,TILE_SIZE, TILECOUNTY * TILE_SIZE, new Vector2(-TILE_SIZE / 2 + getxPos(), TILECOUNTY * TILE_SIZE / 2f + getyPos()));
+        B2dUtil.addRectangleFixture(body,TILE_SIZE, TILECOUNTY * TILE_SIZE, new Vector2(-TILE_SIZE / 2 + getxPos() + (TILECOUNTX + 1) * TILE_SIZE, TILECOUNTY * TILE_SIZE / 2f + getyPos()));
+        B2dUtil.addRectangleFixture(body,(TILECOUNTX * TILE_SIZE), TILE_SIZE, new Vector2(TILE_SIZE * TILECOUNTX / 2 + getxPos(), TILECOUNTY * TILE_SIZE + TILE_SIZE / 2f + getyPos()));
+        B2dUtil.addRectangleFixture(body,(TILECOUNTX * TILE_SIZE), TILE_SIZE, new Vector2(TILE_SIZE * TILECOUNTX / 2 + getxPos(), getyPos() - TILE_SIZE / 2f));
     }
 
 
@@ -148,7 +161,6 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
         mousepos.y = Gdx.input.getY();
         mousepos = camera.unproject(mousepos);
 
-
             //RENDER WORLD DROPS
             Arrays.stream(Layer.values()).forEachOrdered(layer -> Arrays.stream(mapLayers.get(layer))
                 .filter(tileMapObject ->(! (tileMapObject instanceof TileAir))&&(tileMapObject!=null)).forEach(tileMapObject -> tileMapObject.render(batch, camera, delta)));
@@ -167,7 +179,7 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
 
     @Override
     public int getNodeCount() {
-        return PlayScreen.TILECOUNTX*PlayScreen.TILECOUNTY;
+        return TILECOUNTX* TILECOUNTY;
     }
 
     @Override
@@ -259,11 +271,11 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
     }
 
     public Vector2 indexToPos(int index) {
-        return new Vector2(index % PlayScreen.TILECOUNTX * tileSize + getxPos(), index / PlayScreen.TILECOUNTX * tileSize + getyPos());
+        return new Vector2(index % TILECOUNTX * tileSize + getxPos(), index / TILECOUNTX * tileSize + getyPos());
     }
 
     public Vector2 indexToPosCentre(int index) {
-        return new Vector2(index % PlayScreen.TILECOUNTX * tileSize + getxPos() + TILE_SIZE/ 2f, index / PlayScreen.TILECOUNTX * tileSize + getyPos() + TILE_SIZE / 2f);
+        return new Vector2(index % TILECOUNTX * tileSize + getxPos() + TILE_SIZE/ 2f, index / TILECOUNTX * tileSize + getyPos() + TILE_SIZE / 2f);
     }
 
     public Vector2 posToTileCoord(float x, float y) {
@@ -397,6 +409,32 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
         }
         getLayers(layer)[index] = air;
     }
+
+
+
+
+
+    public Consumer<InputArgs> inputListener = inputArgs -> {
+        switch (inputArgs.type) {
+            case InputArgs.TOUCH_DOWN -> {
+                Vector3 mousepos = camera.unproject(new Vector3(inputArgs.screenX, inputArgs.screenY, 0));
+                TileMapObject tile = getTile(getIndexFrom(mousepos.x, mousepos.y), TileMap.Layer.COLLISION);
+                if (inputArgs.button == 0) {
+                    if (getTile(getIndexFrom(mousepos.x, mousepos.y), TileMap.Layer.COLLISION) instanceof TileAir) {
+                        setTileAt(getIndexFrom(mousepos.x, mousepos.y), new TileSolid(world, getIndexFrom(mousepos.x, mousepos.y), this), TileMap.Layer.COLLISION);
+                    }
+                } else if (inputArgs.button == 1) {
+                    removeTileAt(getIndexFrom(mousepos.x, mousepos.y), TileMap.Layer.COLLISION);
+                } else if (inputArgs.button == 2 && tile != null) {
+                    in(new WorldItemStack(this, new Vector2(mousepos.x, mousepos.y)));
+                }
+            }
+        }
+    };
+
+    public Consumer<RenderArgs> renderListener = inputArgs -> {
+        render(inputArgs.batch,inputArgs.camera,inputArgs.delta);
+    };
 
 
 }

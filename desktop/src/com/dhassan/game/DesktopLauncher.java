@@ -12,5 +12,5 @@ public class DesktopLauncher {
         config.setTitle("Dungeon game");
         config.useVsync(true);
         new Lwjgl3Application(new DungeonGame(), config);
-    }
+        }
 }

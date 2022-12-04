@@ -5,6 +5,9 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.physics.box2d.Transform;
+import com.dhassan.game.eventhandler.render.RenderArgs;
+
+import java.util.function.Consumer;
 
 public abstract class GameObject {
     protected Transform transform = new Transform();
@@ -30,4 +33,10 @@ public abstract class GameObject {
     }
 
     public abstract void update(float dt);
+
+    public Consumer<Float> updateListener = this::update;
+
+    public Consumer<RenderArgs> renderListener = inputArgs -> {
+        render(inputArgs.batch,inputArgs.camera,inputArgs.delta);
+    };
 }

@@ -12,15 +12,19 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.IntSet;
 import com.dhassan.game.ICollidable;
+import com.dhassan.game.eventhandler.input.InputArgs;
+import com.dhassan.game.eventhandler.render.RenderArgs;
+import com.dhassan.game.eventhandler.render.RenderEvent;
 import com.dhassan.game.item.ItemStack;
 import com.dhassan.game.screens.PlayScreen;
 import com.dhassan.game.tilemanager.Direction;
 import com.dhassan.game.tilemanager.TileMap;
-import com.dhassan.game.tilemanager.tiles.IInputOutput;
+import com.dhassan.game.tilemanager.tiles.*;
 import com.dhassan.game.utils.AsssetManager;
 import com.dhassan.game.utils.B2dUtil;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 
 public class Player extends Entity implements ICollidable, IInputOutput {
@@ -59,10 +63,6 @@ public class Player extends Entity implements ICollidable, IInputOutput {
     }
 
 
-    @Override
-    public void renderShapes(ShapeRenderer renderer, Camera camera, float delta) {
-
-    }
 
     public void update(float dt) {
         setIndex(tileMap.getIndexFrom(body.getPosition()));
@@ -83,10 +83,9 @@ public class Player extends Entity implements ICollidable, IInputOutput {
             this.velocity.x = 1;
             facing = Direction.E;
         }
-
         this.body.setLinearVelocity(new Vector2().lerp(this.velocity.nor().scl(dt*moveSpeed),dt*PlayScreen.TILE_SIZE*20f));
-        velocity.x=0;
-        velocity.y=0;
+        this.velocity.x=0;
+        this.velocity.y=0;
     }
 
 
@@ -130,6 +129,11 @@ public class Player extends Entity implements ICollidable, IInputOutput {
     }
 
     @Override
+    public void renderShapes(ShapeRenderer renderer, Camera camera, float delta) {
+
+    }
+
+    @Override
     public void in(ItemStack in) {
         sound.stop();
         inventory.add(in);
@@ -154,5 +158,27 @@ public class Player extends Entity implements ICollidable, IInputOutput {
     public void dispose(){
         sound.dispose();
     }
+
+
+    public Consumer<InputArgs> inputListener = inputArgs -> {
+        switch (inputArgs.type){
+            case InputArgs.KEY_DOWN -> {keyDown(inputArgs.keyCode);
+                switch (inputArgs.keyCode) {
+                    case Input.Keys.SPACE-> {
+                        Vector2 dirVec = new Vector2(getFacing().getVecScaled(PlayScreen.TILE_SIZE));
+                        int attempted = tileMap.posToIndex(getX() + dirVec.x, getY() + dirVec.y);
+                        if (attempted >= 0 && attempted <= tileMap.getMaxTileCount()) {
+                            TileMapObject tile = tileMap.getTile(attempted, TileMap.Layer.COLLISION);
+                            if (tile instanceof IBreakable breakable) {
+                                breakable.breakTile();
+                            }
+                        }
+                    }
+                }
+            }
+            case InputArgs.KEY_UP -> {keyUp(inputArgs.keyCode);}
+
+        }
+    };
 
 }

@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
+import com.dhassan.game.eventhandler.render.RenderArgs;
 import com.dhassan.game.item.ItemStack;
 import com.dhassan.game.screens.PlayScreen;
 import com.dhassan.game.tilemanager.TileMap;
@@ -19,6 +20,8 @@ import com.dhassan.game.tilemanager.tiles.IInputOutput;
 import com.dhassan.game.tilemanager.tiles.TileMapObject;
 import com.dhassan.game.utils.AsssetManager;
 import com.dhassan.game.utils.B2dUtil;
+
+import java.util.function.Consumer;
 
 public class Enemy extends Entity {
     private GraphPath<TileMapObject> tilePath;

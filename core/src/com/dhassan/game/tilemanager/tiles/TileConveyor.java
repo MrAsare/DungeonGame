@@ -9,6 +9,7 @@ import com.dhassan.game.utils.AsssetManager;
 public class TileConveyor extends TileBreakable {
     public TileConveyor(World world, int index, TileMap map) {
         super(world, index, map);
+        //TEXTURE ATLAS MUST BE DISPOSED OF
         animation = new Animation<>(1f/10f, AsssetManager.get().get("conveyors.txt", TextureAtlas.class).findRegion("conveyorUp").split(32,32)[0]);
     }
 }

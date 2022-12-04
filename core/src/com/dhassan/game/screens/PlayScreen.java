@@ -2,7 +2,6 @@ package com.dhassan.game.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
@@ -13,18 +12,18 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.dhassan.game.*;
-import com.dhassan.game.entity.Enemy;
-import com.dhassan.game.entity.Entity;
-import com.dhassan.game.entity.Player;
-import com.dhassan.game.item.WorldItemStack;
+import com.dhassan.game.entity.*;
+import com.dhassan.game.eventhandler.input.InputHandler;
+import com.dhassan.game.eventhandler.render.RenderArgs;
+import com.dhassan.game.eventhandler.render.RenderHandler;
+import com.dhassan.game.eventhandler.update.UpdateHandler;
 import com.dhassan.game.tilemanager.TileMap;
-import com.dhassan.game.tilemanager.tiles.IBreakable;
-import com.dhassan.game.tilemanager.tiles.TileAir;
-import com.dhassan.game.tilemanager.tiles.TileMapObject;
-import com.dhassan.game.tilemanager.tiles.TileSolid;
 import com.dhassan.game.utils.AsssetManager;
 import com.dhassan.game.utils.MyContactListener;
 
@@ -34,6 +33,7 @@ import java.util.Arrays;
 import static com.dhassan.game.tilemanager.TileMap.Layer;
 
 public class PlayScreen implements Screen {
+    Stage stage;
     public static float elapsedTime;
     private final boolean debug = true;
     public final ArrayList<String> textures = new ArrayList<>(Arrays.asList(
@@ -71,11 +71,10 @@ public class PlayScreen implements Screen {
 
     private ArrayList<Player> players;
 
-    public ArrayList<Entity> getEntityList() {
-        return entityList;
-    }
 
-    private final ArrayList<Entity> entityList;
+    InputHandler inputHandler = new InputHandler();
+    UpdateHandler updateHandler = new UpdateHandler();
+    RenderHandler renderHandler = new RenderHandler();
 
 
     public PlayScreen(DungeonGame game) {
@@ -83,8 +82,10 @@ public class PlayScreen implements Screen {
         world = new World(new Vector2(0, 0), false);
         shapeRenderer = new ShapeRenderer();
         mousePos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-        entityList = new ArrayList<>();
         players = new ArrayList<>();
+        camera = new OrthographicCamera(GAME_WORLD_WIDTH, GAME_WORLD_HEIGHT);
+        extendViewport = new ExtendViewport(GAME_WORLD_WIDTH, GAME_WORLD_HEIGHT, camera);
+        camera.position.set(GAME_WORLD_WIDTH / 2f, GAME_WORLD_HEIGHT / 2f, 0);
 
         //LOAD TEXTURES
         textures.forEach(texture -> AsssetManager.get().load(texture, Texture.class));
@@ -93,79 +94,36 @@ public class PlayScreen implements Screen {
         AsssetManager.get().finishLoading();
 
 
+        stage = new Stage();
+        TextButton button = new TextButton("YOIT",new Skin(Gdx.files.internal("skins/uiskin.json")));
+        stage.addActor(button);
 
-        camera = new OrthographicCamera(GAME_WORLD_WIDTH, GAME_WORLD_HEIGHT);
-        extendViewport = new ExtendViewport(GAME_WORLD_WIDTH, GAME_WORLD_HEIGHT, camera);
-        camera.position.set(GAME_WORLD_WIDTH / 2f, GAME_WORLD_HEIGHT / 2f, 0);
+        tileGrid = new TileMap(this,world,TILE_SIZE, TILECOUNTX, TILECOUNTY);
+        tileGrid.init(camera);
 
-        tileGrid = new TileMap(this,world, 0, 0, TILE_SIZE, TILECOUNTX, TILECOUNTY);
-        tileGrid.init();
         player = new Player(world,tileGrid, TILE_SIZE, TILE_SIZE);
         players.add(player);
-        entityList.add(player);
+        Enemy enemy = new Enemy(world,tileGrid,TILE_SIZE,TILE_SIZE);
+
         debugRenderer = new Box2DDebugRenderer();
 
         cameraMoveSpeed = GAME_WORLD_WIDTH;
 
-        //CREATE WALL AROUND TILEMAP
-        createBorder();
-
-
-        entityList.add(new Enemy(world,tileGrid,TILE_SIZE,TILE_SIZE));
-
-
 
         world.setContactListener(new MyContactListener());
-        Gdx.input.setInputProcessor(new InputAdapter() {
-            @Override
-            public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-                Vector3 mousepos = camera.unproject(new Vector3(screenX, screenY, 0));
-                TileMapObject tile = tileGrid.getTile(tileGrid.getIndexFrom(mousepos.x, mousepos.y), Layer.COLLISION);
-                if(button==0) {
-                    if(tileGrid.getTile(tileGrid.getIndexFrom(mousepos.x, mousepos.y),Layer.COLLISION) instanceof TileAir) {
-                        tileGrid.setTileAt(tileGrid.getIndexFrom(mousepos.x, mousepos.y), new TileSolid(world, tileGrid.getIndexFrom(mousepos.x, mousepos.y), tileGrid), Layer.COLLISION);
-                    }
-                }else if(button==1) {
-                    tileGrid.removeTileAt(tileGrid.getIndexFrom(mousepos.x, mousepos.y), Layer.COLLISION);
-                }else if(button==2&&tile!=null){
-                        tileGrid.in(new WorldItemStack(tileGrid, new Vector2(mousepos.x, mousepos.y)));
-                }
 
-                return true;
-            }
+        inputHandler.addListener(player.inputListener);
+        inputHandler.addListener(tileGrid.inputListener);
 
-            @Override
-            public boolean keyDown(int keycode) {
-                player.keyDown(keycode);
-                switch (keycode) {
-                    case Input.Keys.SPACE -> {
-                        Vector2 dirVec = new Vector2(player.getFacing().getVecScaled(PlayScreen.TILE_SIZE));
-                        int attempted = tileGrid.posToIndex(player.getX() + dirVec.x, player.getY() + dirVec.y);
-                        if (attempted>=0&&attempted<=tileGrid.getMaxTileCount()) {
-                            TileMapObject tile = tileGrid.getTile(attempted, Layer.COLLISION);
-                            if (tile instanceof IBreakable breakable) {
-                                breakable.breakTile();
-                            }
-                        }
-                    }
+        //Draw in reverse order so they are layered properly
+        renderHandler.addListener(tileGrid.renderListener);
+        renderHandler.addListener(player.renderListener);
+        renderHandler.addListener(enemy.renderListener);
+        updateHandler.addListener(enemy.updateListener);
+        updateHandler.addListener(player.updateListener);
 
-                }
 
-                return true;
-            }
-
-            @Override
-            public boolean keyUp(int keycode) {
-                player.keyUp(keycode);
-                return true;
-            }
-
-            @Override
-            public boolean keyTyped(char character) {
-                return super.keyTyped(character);
-            }
-        });
-
+        Gdx.input.setInputProcessor(inputHandler);
 
     }
 
@@ -174,42 +132,20 @@ public class PlayScreen implements Screen {
 
     }
 
-    private void createBorder() {
-        BodyDef def = new BodyDef();
-        Body body = world.createBody(def);
 
-        FixtureDef fixtureDef = new FixtureDef();
-        def.type = BodyDef.BodyType.StaticBody;
-
-
-        PolygonShape shape = new PolygonShape();
-        shape.setAsBox(TILE_SIZE / 2f, TILECOUNTY * TILE_SIZE / 2f, new Vector2(-TILE_SIZE / 2 + tileGrid.getxPos(), TILECOUNTY * TILE_SIZE / 2f + tileGrid.getyPos()), 0);
-        fixtureDef.shape = shape;
-        body.createFixture(fixtureDef);
-
-        shape.setAsBox(TILE_SIZE / 2f, TILECOUNTY * TILE_SIZE / 2f, new Vector2(-TILE_SIZE / 2 + tileGrid.getxPos() + (TILECOUNTX + 1) * TILE_SIZE, TILECOUNTY * TILE_SIZE / 2f + tileGrid.getyPos()), 0);
-        fixtureDef.shape = shape;
-        body.createFixture(fixtureDef);
-
-        shape.setAsBox((TILECOUNTX * TILE_SIZE) / 2f, TILE_SIZE / 2f, new Vector2(TILE_SIZE * TILECOUNTX / 2 + tileGrid.getxPos(), TILECOUNTY * TILE_SIZE + TILE_SIZE / 2f + tileGrid.getyPos()), 0);
-        fixtureDef.shape = shape;
-        body.createFixture(fixtureDef);
-
-        shape.setAsBox((TILECOUNTX * TILE_SIZE) / 2f, TILE_SIZE / 2f, new Vector2(TILE_SIZE * TILECOUNTX / 2 + tileGrid.getxPos(), tileGrid.getyPos() - TILE_SIZE / 2f), 0);
-        fixtureDef.shape = shape;
-        body.createFixture(fixtureDef);
-        shape.dispose();
-    }
 
     @Override
     public void render(float delta) {
+        updateHandler.updateListener.broadcast(delta);
+
+
         elapsedTime+=delta;
         mousePos.x = Gdx.input.getX();
         mousePos.y = Gdx.input.getY();
         mousePos = camera.unproject(mousePos);
-
-        entityList.forEach(entity -> entity.update(delta));
         camera.update();
+        extendViewport.apply();
+
 
         Gdx.gl.glClearColor(0, 0, 0, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -232,29 +168,25 @@ public class PlayScreen implements Screen {
         }
 
 
-        extendViewport.apply();
+        world.step(1 / 60f, 6, 2);
+        tileGrid.destroyBodies();
+
         renderSprites(delta);
+
 
         if(debug) {
             debugRenderer.render(world, camera.combined);
             renderShapes(delta);
-
         }
-
-        world.step(1 / 60f, 6, 2);
-
-        tileGrid.destroyBodies();
-
     }
 
     private void renderSprites(float delta) {
         game.getSpriteBatch().begin();
         game.getSpriteBatch().setProjectionMatrix(camera.combined);
-
-        tileGrid.render(game.getSpriteBatch(), camera, delta);
         game.getSpriteBatch().enableBlending();
-        player.render(game.getSpriteBatch(), camera, delta);
-        entityList.forEach(entity -> entity.render(game.getSpriteBatch(),camera,delta));
+
+        RenderArgs renderArgs = new RenderArgs(game.getSpriteBatch(),camera,delta);
+        renderHandler.renderListener.broadcast(renderArgs);
         game.getSpriteBatch().end();
     }
 
@@ -273,11 +205,8 @@ public class PlayScreen implements Screen {
                     shapeRenderer.circle(tile.getToNode().getPosCentre().x, tile.getToNode().getPosCentre().y, 0.1f, 10);
                 });
                 shapeRenderer.end();
-
-                player.renderShapes(shapeRenderer,camera,delta);
-                entityList.forEach(entity -> entity.renderShapes(shapeRenderer,camera,delta));
-
         }
+        stage.draw();
 
 
     }
@@ -310,6 +239,7 @@ public class PlayScreen implements Screen {
         world.dispose();
         debugRenderer.dispose();
         player.dispose();
+        stage.dispose();
     }
 
 
