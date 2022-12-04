@@ -9,6 +9,11 @@ public class TileConnection implements Connection<TileMapObject> {
     private TileMapObject to;
     float cost;
 
+    /**
+     * Represent connection from one TileMapObject to another
+     * @param from Tile connection start
+     * @param to Tile connection end
+     */
     public TileConnection(TileMapObject from,TileMapObject to){
         this.from =from;
         this.to = to;

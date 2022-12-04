@@ -1,18 +1,16 @@
 package com.dhassan.game.tilemanager.tiles;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
-import com.dhassan.game.utils.AsssetManager;
-import com.dhassan.game.utils.B2dUtil;
 import com.dhassan.game.ICollidable;
 import com.dhassan.game.screens.PlayScreen;
 import com.dhassan.game.tilemanager.TileMap;
+import com.dhassan.game.utils.AsssetManager;
+import com.dhassan.game.utils.B2dUtil;
 
 
 public class TileSolid extends TileMapObject implements ICollidable{
@@ -20,12 +18,22 @@ public class TileSolid extends TileMapObject implements ICollidable{
         return body;
     }
     protected Body body;
+
+    /**
+     * Solid Tile
+     * @param world World for physics body to be spawned in
+     * @param index Location in TileMap array
+     * @param map Map of tiles
+     */
     public TileSolid(World world, int index, TileMap map) {
         super(world, index, map);
         setTexture(AsssetManager.get().get("wall.png", Texture.class));
         addBody(world);
     }
 
+    /**
+     * Add this tile's body to list of body's to be destroyed
+     */
     public void destroy(){
         getMap().addToDestroyList(getBody());
     }

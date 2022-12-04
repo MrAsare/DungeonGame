@@ -5,28 +5,42 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.dhassan.game.utils.AsssetManager;
 import com.dhassan.game.GameObject;
 import com.dhassan.game.screens.PlayScreen;
+import com.dhassan.game.utils.AsssetManager;
 
 public class ItemStack extends GameObject {
     private final float size = PlayScreen.TILE_SIZE / 3f;
     protected int count;
 
+    /**
+     * @return name of this ItemStack
+     */
     public String getName() {
         return name;
     }
 
     protected String name;
-    public ItemStack(String name, Vector2 pos) {
+
+    /**
+     * Stack of Items
+     * @param name Name of this ItemStack
+     * @see Item
+     */
+    public ItemStack(String name) {
         count = 1;
         this.name = name;
-        transform.setPosition(pos);
         setTexture(AsssetManager.get().get(name, Texture.class));
     }
 
-    public ItemStack(String name, Vector2 pos, int count) {
-        this(name, pos);
+    /**
+     * Stack of Items
+     * @param name Name of this ItemStack
+     * @param count Number of Items in this ItemStack
+     * @see Item
+     */
+    public ItemStack(String name, int count) {
+        this(name);
         this.count = count;
     }
 

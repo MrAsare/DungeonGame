@@ -13,13 +13,13 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.IntSet;
 import com.dhassan.game.ICollidable;
 import com.dhassan.game.eventhandler.input.InputArgs;
-import com.dhassan.game.eventhandler.render.RenderArgs;
-import com.dhassan.game.eventhandler.render.RenderEvent;
 import com.dhassan.game.item.ItemStack;
 import com.dhassan.game.screens.PlayScreen;
 import com.dhassan.game.tilemanager.Direction;
 import com.dhassan.game.tilemanager.TileMap;
-import com.dhassan.game.tilemanager.tiles.*;
+import com.dhassan.game.tilemanager.tiles.IBreakable;
+import com.dhassan.game.tilemanager.tiles.IInputOutput;
+import com.dhassan.game.tilemanager.tiles.TileMapObject;
 import com.dhassan.game.utils.AsssetManager;
 import com.dhassan.game.utils.B2dUtil;
 
@@ -38,7 +38,13 @@ public class Player extends Entity implements ICollidable, IInputOutput {
     private int tileToMoveTo =-1;
 
 
-
+    /**
+     * Controllable player
+     * @param world World for physics body of this to exist in
+     * @param tileMap TileMap for this to exist in
+     * @param sX Width of this
+     * @param sY Height of this
+     */
     public Player(World world, TileMap tileMap, float sX, float sY) {
         super(world,tileMap);
         this.sX = sX;
@@ -49,15 +55,11 @@ public class Player extends Entity implements ICollidable, IInputOutput {
         sound = AsssetManager.get().get("sound.ogg",Sound.class);
         addBody(world);
     }
-    public void setTileToMoveTo(int tileToMoveTo) {
-        this.tileToMoveTo = tileToMoveTo;
-    }
 
-    public int getTileToMoveTo() {
-        return tileToMoveTo;
-    }
-
-
+    /**
+     * Get the direction this is facing based on movement
+     * @return Direction this is facing
+     */
     public Direction getFacing() {
         return facing;
     }
@@ -65,7 +67,7 @@ public class Player extends Entity implements ICollidable, IInputOutput {
 
 
     public void update(float dt) {
-        setIndex(tileMap.getIndexFrom(body.getPosition()));
+        setIndex(tileMap.posToIndex(body.getPosition()));
 
         if (keyDownSet.contains(Input.Keys.W)) {
             this.velocity.y = 1;
@@ -88,15 +90,24 @@ public class Player extends Entity implements ICollidable, IInputOutput {
         this.velocity.y=0;
     }
 
-
+    /**
+     * Get position of physics body
+     * @return Position of physics body
+     */
     public Vector2 getPosition(){
         return body.getPosition();
     }
 
+    /**
+     * @param keycode Add keycode to list of keys down
+     */
     public void keyDown(int keycode) {
         keyDownSet.add(keycode);
     }
 
+    /**
+     * @param keycode Remove keycode to list of keys down
+     */
     public void keyUp(int keycode) {
         keyDownSet.remove(keycode);
     }
@@ -155,6 +166,9 @@ public class Player extends Entity implements ICollidable, IInputOutput {
         return false;
     }
 
+    /**
+     * Free up resources
+     */
     public void dispose(){
         sound.dispose();
     }

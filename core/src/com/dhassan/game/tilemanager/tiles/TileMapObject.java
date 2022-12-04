@@ -1,19 +1,16 @@
 package com.dhassan.game.tilemanager.tiles;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.DelaunayTriangulator;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.utils.TimeUtils;
 import com.dhassan.game.GameObject;
-import com.dhassan.game.utils.IntPair;
 import com.dhassan.game.screens.PlayScreen;
 import com.dhassan.game.tilemanager.TileMap;
+import com.dhassan.game.utils.IntPair;
 
 import java.util.ArrayList;
 
@@ -32,7 +29,12 @@ public abstract class TileMapObject extends GameObject {
     private final ArrayList<Integer> neighbourIndexes = new ArrayList<>();
 
 
-
+    /**
+     * Tile representing a generic Tile within a TileMap
+     * @param world World for physics body to be spawned in
+     * @param index Location in TileMap array
+     * @param map Map of tiles
+     */
     public TileMapObject(World world, int index, TileMap map) {
         this.world = world;
         this.map = map;
@@ -70,6 +72,10 @@ public abstract class TileMapObject extends GameObject {
 
     }
 
+    /**
+     * Get the world where the physics will be spawned
+     * @return World for physics
+     */
     public World getWorld() {
         return world;
     }
@@ -78,25 +84,43 @@ public abstract class TileMapObject extends GameObject {
         return map;
     }
 
+    /**
+     * Get X and Y indexes based on position
+     * @return Pair of X and Y indexes
+     */
     public IntPair getTileCoords() {
-        int xIndex = index % PlayScreen.TILECOUNTX;
-        int yIndex = index/PlayScreen.TILECOUNTX;
-        return new IntPair(xIndex,yIndex);
+        return new IntPair(getXCoord(),getYCoord());
     }
 
+    /**
+     * Get X indexe based on position
+     * @return X coordinate
+     */
     public int getXCoord() {
         return index % PlayScreen.TILECOUNTX;
     }
+    /**
+     * Get Y indexe based on position
+     * @return Y coordinate
+     */
     public int getYCoord() {
         return index/PlayScreen.TILECOUNTX;
     }
 
+    /**
+     * Get centre position of tile
+     * @return Vector2 of centre position of tile
+     */
     public Vector2 getPosCentre(){
         float x =getXCoord()* PlayScreen.TILE_SIZE;
         float y =getYCoord()* PlayScreen.TILE_SIZE;
         return new Vector2(x+ PlayScreen.TILE_SIZE/2f,y+PlayScreen.TILE_SIZE/2f);
     }
 
+    /**
+     * Get index of Tile in TileMap array
+     * @return index
+     */
     public int getIndex() {
         return index;
     }

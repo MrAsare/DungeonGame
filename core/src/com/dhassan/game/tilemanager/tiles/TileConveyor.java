@@ -7,6 +7,12 @@ import com.dhassan.game.tilemanager.TileMap;
 import com.dhassan.game.utils.AsssetManager;
 
 public class TileConveyor extends TileBreakable {
+    /**
+     * Conveyor Tile
+     * @param world World for physics body to be spawned in
+     * @param index Location in TileMap array
+     * @param map Map of tiles
+     */
     public TileConveyor(World world, int index, TileMap map) {
         super(world, index, map);
         //TEXTURE ATLAS MUST BE DISPOSED OF

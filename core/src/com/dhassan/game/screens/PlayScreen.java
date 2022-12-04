@@ -11,14 +11,16 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.dhassan.game.*;
-import com.dhassan.game.entity.*;
+import com.dhassan.game.DungeonGame;
+import com.dhassan.game.entity.Enemy;
+import com.dhassan.game.entity.Player;
 import com.dhassan.game.eventhandler.input.InputHandler;
 import com.dhassan.game.eventhandler.render.RenderArgs;
 import com.dhassan.game.eventhandler.render.RenderHandler;
@@ -77,6 +79,9 @@ public class PlayScreen implements Screen {
     RenderHandler renderHandler = new RenderHandler();
 
 
+    /**
+     * Screen where gameplay takes place
+     */
     public PlayScreen(DungeonGame game) {
         this.game = game;
         world = new World(new Vector2(0, 0), false);
@@ -180,6 +185,10 @@ public class PlayScreen implements Screen {
         }
     }
 
+    /**
+     * Render all sprites
+     * @param delta Time between last frame
+     */
     private void renderSprites(float delta) {
         game.getSpriteBatch().begin();
         game.getSpriteBatch().setProjectionMatrix(camera.combined);
@@ -190,18 +199,22 @@ public class PlayScreen implements Screen {
         game.getSpriteBatch().end();
     }
 
+    /**
+     * Render all shapes
+     * @param delta Time between last frame
+     */
     private void renderShapes(float delta) {
 
         shapeRenderer.setProjectionMatrix(camera.combined);
 
-        if (tileGrid.isMouseInGrid(mousePos.x, mousePos.y)) {
+        if (tileGrid.isInGrid(mousePos.x, mousePos.y)) {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
             Vector2 vec = tileGrid.posToTileCoord(mousePos.x, mousePos.y);
             shapeRenderer.rect(vec.x, vec.y, TILE_SIZE, TILE_SIZE);
             shapeRenderer.end();
 
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-                tileGrid.getConnections(tileGrid.getTile(tileGrid.getIndexFrom(mousePos.x, mousePos.y), Layer.COLLISION)).forEach(tile -> {
+                tileGrid.getConnections(tileGrid.getTile(tileGrid.posToIndex(mousePos.x, mousePos.y), Layer.COLLISION)).forEach(tile -> {
                     shapeRenderer.circle(tile.getToNode().getPosCentre().x, tile.getToNode().getPosCentre().y, 0.1f, 10);
                 });
                 shapeRenderer.end();

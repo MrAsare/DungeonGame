@@ -11,7 +11,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
-import com.dhassan.game.eventhandler.render.RenderArgs;
 import com.dhassan.game.item.ItemStack;
 import com.dhassan.game.screens.PlayScreen;
 import com.dhassan.game.tilemanager.TileMap;
@@ -21,8 +20,9 @@ import com.dhassan.game.tilemanager.tiles.TileMapObject;
 import com.dhassan.game.utils.AsssetManager;
 import com.dhassan.game.utils.B2dUtil;
 
-import java.util.function.Consumer;
-
+/**
+ * Enemy designed to follow player using A* search
+ */
 public class Enemy extends Entity {
     private GraphPath<TileMapObject> tilePath;
     private final float sX, sY;
@@ -35,15 +35,29 @@ public class Enemy extends Entity {
     Rectangle rect = new Rectangle();
 
 
+    /**
+     * Get tile that this should move to
+     * @return index of tile that this is moving to
+     */
     public int getTileToMoveTo() {
         return tileToMoveTo;
     }
 
+    /**
+     * Set the tile this should move to
+     */
     public void setTileToMoveTo(int tileToMoveTo) {
         this.tileToMoveTo = tileToMoveTo;
     }
 
 
+    /**
+     *
+     * @param world Current world for physics
+     * @param tilemap TileMap this should be spawned on
+     * @param sX Width of this
+     * @param sY Height of this
+     */
     public Enemy(World world, TileMap tilemap, float sX, float sY) {
         super(world, tilemap);
         this.sX = sX;
@@ -127,11 +141,15 @@ public class Enemy extends Entity {
         body.setUserData(this);
     }
 
+    /**
+     * Calculate the paths to where this is moving to
+     * @param dt Time since last update
+     */
     public void calculatePaths(float dt){
         //        CALCULATE PATH TO PLAYER MOUSE@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         time += dt;
         if (time > 1f / UpdatesPerSecond &&isFollowingTarget){
-            tilePath = tileMap.findPath(tileMap.getTile(tileMap.getIndexFrom(getBody().getPosition()), Layer.COLLISION), tileMap.getTile(playerToFollow.index, Layer.COLLISION));
+            tilePath = tileMap.findPath(tileMap.getTile(tileMap.posToIndex(getBody().getPosition()), Layer.COLLISION), tileMap.getTile(playerToFollow.index, Layer.COLLISION));
             tileToMoveTo =1;
             time = 0;
         }
@@ -149,7 +167,7 @@ public class Enemy extends Entity {
             }
 
             //IF AT FINAL PATH
-            if (tileMap.getTile(tileMap.getIndexFrom(getBody().getPosition()), Layer.COLLISION) == tilePath.get(tilePath.getCount() - 1)) {
+            if (tileMap.getTile(tileMap.posToIndex(getBody().getPosition()), Layer.COLLISION) == tilePath.get(tilePath.getCount() - 1)) {
                 tilePath = null;
                 tileToMoveTo =-1;
             }

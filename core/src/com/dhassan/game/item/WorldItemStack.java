@@ -11,12 +11,11 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
-import com.dhassan.game.entity.Entity;
-import com.dhassan.game.utils.B2dUtil;
 import com.dhassan.game.ICollidable;
 import com.dhassan.game.entity.Player;
 import com.dhassan.game.screens.PlayScreen;
 import com.dhassan.game.tilemanager.TileMap;
+import com.dhassan.game.utils.B2dUtil;
 
 public class WorldItemStack extends ItemStack implements ICollidable {
 
@@ -28,8 +27,13 @@ public class WorldItemStack extends ItemStack implements ICollidable {
     private boolean moveToPlayer = false;
     private Player player;
 
+    /**
+     * An ItemStack that is spawned in the world
+     * @param map TileMap for this to be spawned on
+     * @param vec Position to be spawned
+     */
     public WorldItemStack(TileMap map, Vector2 vec) {
-        super(Item.CONVEYOR0,vec);
+        super(Item.CONVEYOR0);
         this.map = map;
         this.size = PlayScreen.TILE_SIZE / 2f;
         font = new BitmapFont(Gdx.files.internal("font.fnt"));
@@ -39,21 +43,38 @@ public class WorldItemStack extends ItemStack implements ICollidable {
 
         addBody(map.getWorld());
         setPos(vec);
+        this.body.setTransform(vec,0);
 
     }
 
+    /**
+     * Get physical body associated with this
+     * @return Physical body
+     */
     public Body getBody() {
         return body;
     }
 
+    /**
+     * Get physical body position
+     * @return Position of physical body
+     */
     public Vector2 getPos() {
         return body.getPosition();
     }
 
+    /**
+     * Set position of physical body
+     * @param pos Position to be set
+     */
     public void setPos(Vector2 pos) {
         body.setTransform(pos, 0);
     }
 
+    /**
+     * Called when an ItemStack is picked up
+     * @param map TileMap where this was spawned
+     */
     public void onPickup(TileMap map) {
         map.addToDestroyList(body);
     }
