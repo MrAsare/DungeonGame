@@ -12,10 +12,10 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
 import com.dhassan.game.item.ItemStack;
-import com.dhassan.game.screens.PlayScreen;
+import com.dhassan.game.screens.GameScreen;
 import com.dhassan.game.tilemanager.TileMap;
 import com.dhassan.game.tilemanager.TileMap.Layer;
-import com.dhassan.game.tilemanager.tiles.IInputOutput;
+import com.dhassan.game.tilemanager.tiles.InputOutput;
 import com.dhassan.game.tilemanager.tiles.TileMapObject;
 import com.dhassan.game.utils.AsssetManager;
 import com.dhassan.game.utils.B2dUtil;
@@ -28,7 +28,7 @@ public class Enemy extends Entity {
     private final float sX, sY;
     private float time;
     private static final int UpdatesPerSecond =1;
-    private final float moveSpeed = PlayScreen.TILE_SIZE * 100f;
+    private final float moveSpeed = GameScreen.TILE_SIZE * 500f;
     private int tileToMoveTo = -1;
     private boolean isFollowingTarget = false;
     private Player playerToFollow;
@@ -54,12 +54,11 @@ public class Enemy extends Entity {
     /**
      *
      * @param world Current world for physics
-     * @param tilemap TileMap this should be spawned on
      * @param sX Width of this
      * @param sY Height of this
      */
-    public Enemy(World world, TileMap tilemap, float sX, float sY) {
-        super(world, tilemap);
+    public Enemy(World world,TileMap map,float sX, float sY) {
+        super(world,map);
         this.sX = sX;
         this.sY = sY;
         setTexture(AsssetManager.get().get("face.png", Texture.class));
@@ -80,7 +79,7 @@ public class Enemy extends Entity {
         renderer.end();
         renderer.begin(ShapeRenderer.ShapeType.Filled);
         renderer.setColor(Color.RED);
-        renderer.rect(rect.getX()-PlayScreen.TILE_SIZE/10f,rect.getY()-PlayScreen.TILE_SIZE/10f,PlayScreen.TILE_SIZE/5f,PlayScreen.TILE_SIZE/5f);
+        renderer.rect(rect.getX()- GameScreen.TILE_SIZE/10f,rect.getY()- GameScreen.TILE_SIZE/10f, GameScreen.TILE_SIZE/5f, GameScreen.TILE_SIZE/5f);
         renderer.end();
         renderer.setColor(Color.WHITE);
     }
@@ -88,8 +87,9 @@ public class Enemy extends Entity {
 
     @Override
     public void update(float dt) {
+        super.update(dt);
         calculatePaths(dt);
-        this.body.setLinearVelocity(new Vector2().lerp(this.velocity.nor().scl(dt * moveSpeed), dt * PlayScreen.TILE_SIZE * 20f));
+        this.body.setLinearVelocity(new Vector2().lerp(this.velocity.nor().scl(dt * moveSpeed), dt * GameScreen.TILE_SIZE * 20f));
         this.velocity.x = 0;
         this.velocity.y = 0;
     }
@@ -117,7 +117,7 @@ public class Enemy extends Entity {
     }
 
     @Override
-    public void out(ItemStack out, IInputOutput in) {
+    public void out(ItemStack out, InputOutput in) {
 
     }
 
@@ -135,8 +135,8 @@ public class Enemy extends Entity {
     @Override
     public void addBody(World world) {
         setBody(B2dUtil.createBody(world, BodyDef.BodyType.DynamicBody));
-        B2dUtil.addCircleFixture(this.body, PlayScreen.TILE_SIZE / 4f, false);
-        B2dUtil.addCircleFixture(this.body, PlayScreen.TILE_SIZE*4, true).setUserData("enemysight");
+        B2dUtil.addCircleFixture(this.body, GameScreen.TILE_SIZE / 4f, false);
+        B2dUtil.addCircleFixture(this.body, GameScreen.TILE_SIZE*4, true).setUserData("enemysight");
         body.setTransform(new Vector2(10, 10), 0);
         body.setUserData(this);
     }
@@ -159,7 +159,7 @@ public class Enemy extends Entity {
             //MAKE PLAYER MOVE TOWARDS NEXT TILE
             TileMapObject tile = tilePath.get(tileToMoveTo);
             //IF PLAYER IS ON TILE HES MEANT TO MOVE TO
-            rect = new Rectangle(tile.getPosCentre().x - PlayScreen.TILE_SIZE/20f,tile.getPosCentre().y- PlayScreen.TILE_SIZE/20f,PlayScreen.TILE_SIZE/10f,PlayScreen.TILE_SIZE/10f);
+            rect = new Rectangle(tile.getPosCentre().x - GameScreen.TILE_SIZE/20f,tile.getPosCentre().y- GameScreen.TILE_SIZE/20f, GameScreen.TILE_SIZE/10f, GameScreen.TILE_SIZE/10f);
 
             if (rect.contains(body.getPosition())) {
                 //SET NEXT TILE IN PATH TO BE THE ONE TO GO TO

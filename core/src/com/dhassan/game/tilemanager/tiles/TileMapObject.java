@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.dhassan.game.GameObject;
-import com.dhassan.game.screens.PlayScreen;
+import com.dhassan.game.screens.GameScreen;
 import com.dhassan.game.tilemanager.TileMap;
 import com.dhassan.game.utils.IntPair;
 
@@ -40,8 +40,8 @@ public abstract class TileMapObject extends GameObject {
         this.map = map;
         this.index = index;
         pos = map.indexToPos(index);
-        int below = index-PlayScreen.TILECOUNTX;
-        int above = index+PlayScreen.TILECOUNTX;
+        int below = index- GameScreen.TILECOUNTX;
+        int above = index+ GameScreen.TILECOUNTX;
         int left = index-1;
         int right = index+1;
 
@@ -53,17 +53,17 @@ public abstract class TileMapObject extends GameObject {
         this.neighbourIndexes.add(below);
         this.neighbourIndexes.add(above);
 
-        if(index/ PlayScreen.TILECOUNTX==0){
+        if(index/ GameScreen.TILECOUNTX==0){
             this.neighbourIndexes.remove(Integer.valueOf(below));
         }
-        if(index/  PlayScreen.TILECOUNTX==  PlayScreen.TILECOUNTY-1){
+        if(index/  GameScreen.TILECOUNTX==  GameScreen.TILECOUNTY-1){
             this.neighbourIndexes.remove(Integer.valueOf(above));
         }
 
-        if(index%PlayScreen.TILECOUNTX==0){
+        if(index% GameScreen.TILECOUNTX==0){
             this.neighbourIndexes.remove(Integer.valueOf(left));
         }
-        if(index%PlayScreen.TILECOUNTX==PlayScreen.TILECOUNTX-1){
+        if(index% GameScreen.TILECOUNTX== GameScreen.TILECOUNTX-1){
             this.neighbourIndexes.remove(Integer.valueOf(right));
         }
 
@@ -97,14 +97,14 @@ public abstract class TileMapObject extends GameObject {
      * @return X coordinate
      */
     public int getXCoord() {
-        return index % PlayScreen.TILECOUNTX;
+        return index % GameScreen.TILECOUNTX;
     }
     /**
      * Get Y indexe based on position
      * @return Y coordinate
      */
     public int getYCoord() {
-        return index/PlayScreen.TILECOUNTX;
+        return index/ GameScreen.TILECOUNTX;
     }
 
     /**
@@ -112,9 +112,9 @@ public abstract class TileMapObject extends GameObject {
      * @return Vector2 of centre position of tile
      */
     public Vector2 getPosCentre(){
-        float x =getXCoord()* PlayScreen.TILE_SIZE;
-        float y =getYCoord()* PlayScreen.TILE_SIZE;
-        return new Vector2(x+ PlayScreen.TILE_SIZE/2f,y+PlayScreen.TILE_SIZE/2f);
+        float x =getXCoord()* GameScreen.TILE_SIZE;
+        float y =getYCoord()* GameScreen.TILE_SIZE;
+        return new Vector2(x+ GameScreen.TILE_SIZE/2f,y+ GameScreen.TILE_SIZE/2f);
     }
 
     /**
@@ -130,10 +130,10 @@ public abstract class TileMapObject extends GameObject {
         if(animation==null) {
             if (getTexture() != null) {
 
-                batch.draw(getTexture(), pos.x, pos.y, PlayScreen.TILE_SIZE, PlayScreen.TILE_SIZE);
+                batch.draw(getTexture(), pos.x, pos.y, GameScreen.TILE_SIZE, GameScreen.TILE_SIZE);
             }
         }else{
-            batch.draw(animation.getKeyFrame(PlayScreen.elapsedTime,true),pos.x,pos.y,PlayScreen.TILE_SIZE, PlayScreen.TILE_SIZE);
+            batch.draw(animation.getKeyFrame(GameScreen.elapsedTime,true),pos.x,pos.y, GameScreen.TILE_SIZE, GameScreen.TILE_SIZE);
         }
     }
 

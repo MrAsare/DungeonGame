@@ -9,6 +9,8 @@ public class RenderEvent {
 
     public void addListener(Consumer<RenderArgs> listener) {listeners.add(listener);}
 
+
+
     public void broadcast(RenderArgs args){
         listeners.forEach(consumer->{consumer.accept(args);});
     }

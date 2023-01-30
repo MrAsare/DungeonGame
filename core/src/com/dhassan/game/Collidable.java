@@ -3,7 +3,7 @@ package com.dhassan.game;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
 
-public interface ICollidable {
+public interface Collidable {
     void beginContact(Fixture main, Fixture sub);
 
     void endContact(Fixture main, Fixture sub);

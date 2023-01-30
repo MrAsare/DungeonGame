@@ -4,13 +4,12 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
 import com.dhassan.game.GameObject;
-import com.dhassan.game.screens.PlayScreen;
+import com.dhassan.game.screens.GameScreen;
 import com.dhassan.game.utils.AsssetManager;
 
 public class ItemStack extends GameObject {
-    private final float size = PlayScreen.TILE_SIZE / 3f;
+    private final float size = GameScreen.TILE_SIZE / 3f;
     protected int count;
 
     /**

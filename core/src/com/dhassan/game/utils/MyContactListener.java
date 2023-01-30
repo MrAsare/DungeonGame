@@ -1,7 +1,7 @@
 package com.dhassan.game.utils;
 
 import com.badlogic.gdx.physics.box2d.*;
-import com.dhassan.game.ICollidable;
+import com.dhassan.game.Collidable;
 
 public class MyContactListener implements ContactListener {
     @Override
@@ -9,10 +9,10 @@ public class MyContactListener implements ContactListener {
         Fixture bA = contact.getFixtureA();
         Fixture bB = contact.getFixtureB();
 
-        if (bA.getBody().getUserData() instanceof ICollidable col) {
+        if (bA.getBody().getUserData() instanceof Collidable col) {
             col.beginContact(bA, bB);
         }
-        if (bB.getBody().getUserData() instanceof ICollidable col) {
+        if (bB.getBody().getUserData() instanceof Collidable col) {
             col.beginContact(bB, bA);
         }
 
@@ -23,10 +23,10 @@ public class MyContactListener implements ContactListener {
         Fixture bA = contact.getFixtureA();
         Fixture bB = contact.getFixtureB();
 
-        if (bA.getBody().getUserData() instanceof ICollidable col) {
+        if (bA.getBody().getUserData() instanceof Collidable col) {
             col.endContact(bA, bB);
         }
-        if (bB.getBody().getUserData() instanceof ICollidable col) {
+        if (bB.getBody().getUserData() instanceof Collidable col) {
             col.endContact(bB, bA);
         }
     }

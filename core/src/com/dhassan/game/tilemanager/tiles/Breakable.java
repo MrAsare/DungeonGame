@@ -1,6 +1,6 @@
 package com.dhassan.game.tilemanager.tiles;
 
-public interface IBreakable {
+public interface Breakable {
     /**
      * Break this tile
      */

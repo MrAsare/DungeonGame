@@ -4,13 +4,13 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.dhassan.game.item.WorldItemStack;
-import com.dhassan.game.screens.PlayScreen;
+import com.dhassan.game.screens.GameScreen;
 import com.dhassan.game.tilemanager.TileMap;
 import com.dhassan.game.utils.AsssetManager;
 
 import java.util.Random;
 
-public class TileBreakable extends TileMapObject implements IBreakable {
+public class TileBreakable extends TileMapObject implements Breakable {
     Random r = new Random();
 
     /**
@@ -32,7 +32,7 @@ public class TileBreakable extends TileMapObject implements IBreakable {
         //Spawn some drops
         Vector2 spawnPos = getMap().indexToPosCentre(getIndex());
         for (int i = 0; i <= r.nextInt(4); i++) {
-            getMap().in(new WorldItemStack(getMap(), new Vector2(spawnPos.x + (r.nextFloat(1) - 0.5f) * PlayScreen.TILE_SIZE, spawnPos.y + (r.nextFloat(1) - 0.5f) * PlayScreen.TILE_SIZE)));
+            getMap().in(new WorldItemStack(getMap(), new Vector2(spawnPos.x + (r.nextFloat(1) - 0.5f) * GameScreen.TILE_SIZE, spawnPos.y + (r.nextFloat(1) - 0.5f) * GameScreen.TILE_SIZE)));
         }
 
     }

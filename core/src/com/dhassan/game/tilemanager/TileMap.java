@@ -15,28 +15,28 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.dhassan.game.ICollidable;
+import com.dhassan.game.Collidable;
+import com.dhassan.game.entity.Enemy;
+import com.dhassan.game.entity.Player;
 import com.dhassan.game.eventhandler.input.InputArgs;
 import com.dhassan.game.eventhandler.render.RenderArgs;
 import com.dhassan.game.item.ItemStack;
 import com.dhassan.game.item.WorldItemStack;
-import com.dhassan.game.screens.PlayScreen;
+import com.dhassan.game.screens.GameScreen;
 import com.dhassan.game.tilemanager.astar.TileConnection;
 import com.dhassan.game.tilemanager.astar.TileHeuristic;
 import com.dhassan.game.tilemanager.tiles.*;
 import com.dhassan.game.utils.B2dUtil;
 import com.dhassan.game.utils.IntPair;
 
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.LinkedList;
-import java.util.Random;
+import javax.xml.transform.OutputKeys;
+import java.util.*;
 import java.util.function.Consumer;
 
-import static com.dhassan.game.screens.PlayScreen.*;
+import static com.dhassan.game.screens.GameScreen.*;
 
 
-public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
+public class TileMap implements InputOutput, IndexedGraph<TileMapObject>{
     private final LinkedList<WorldItemStack> worldDrops = new LinkedList<>();
     private  World world;
     private final EnumMap<Layer, TileMapObject[]> mapLayers = new EnumMap<>(Layer.class);
@@ -44,16 +44,18 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
     protected float xPos,yPos,tileSize;
     protected int tileCountX,tileCountY;
     protected Camera camera;
+    private ArrayList<Player> players;
+    private ArrayList<Enemy> enemies;
 
-    public PlayScreen getScreen() {
+    public GameScreen getScreen() {
         return screen;
     }
 
-    public void setScreen(PlayScreen screen) {
+    public void setScreen(GameScreen screen) {
         this.screen = screen;
     }
 
-    private PlayScreen screen;
+    private GameScreen screen;
     Vector3 mousepos = new Vector3();
 
 
@@ -69,7 +71,7 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
      * @param tileCountX Width in tiles
      * @param tileCountY Height in tiles
      */
-    public TileMap(PlayScreen screen, World world, float tileSize, int tileCountX, int tileCountY) {
+    public TileMap(GameScreen screen, World world, float tileSize, int tileCountX, int tileCountY) {
         Arrays.stream(Layer.values()).forEach(layer -> mapLayers.put(layer, new TileMapObject[tileCountX * tileCountY]));
         xPos = 0;
         yPos = 0;
@@ -79,6 +81,8 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
         this.tileCountX = tileCountX;
         this.tileCountY = tileCountY;
         createBorder();
+        players = new ArrayList<>();
+        enemies = new ArrayList<>();
     }
 
     /**
@@ -130,7 +134,7 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
     }
 
     @Override
-    public void out(ItemStack stackOut, IInputOutput inv) {
+    public void out(ItemStack stackOut, InputOutput inv) {
         worldDrops.remove((WorldItemStack) stackOut);
         inv.in(stackOut);
     }
@@ -470,7 +474,7 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
 
             neighbour.getNeighbourIndexes().forEach(newindex2->{
                 TileMapObject neighbour2 = getTile(newindex2,layer);
-                    if (neighbour2 != tileToBeRemoved && !(neighbour instanceof ICollidable) && !(neighbour2 instanceof ICollidable)) {
+                    if (neighbour2 != tileToBeRemoved && !(neighbour instanceof Collidable) && !(neighbour2 instanceof Collidable)) {
                         connectTiles(neighbour2, neighbour);
                         connectTiles(neighbour, neighbour2);
                     }
@@ -512,13 +516,13 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
                         neighbour.getNeighbourIndexes().forEach(newindex2 -> {
                             TileMapObject neighbour2 = getTile(newindex2, layer);
                             //IF neighbour isnt the one being removed, reconnect it
-                            if (neighbour2 != tileToBeRemoved && !(neighbour instanceof ICollidable) && !(neighbour2 instanceof ICollidable)) {
+                            if (neighbour2 != tileToBeRemoved && !(neighbour instanceof Collidable) && !(neighbour2 instanceof Collidable)) {
                                 connectTiles(neighbour2, neighbour);
                                 connectTiles(neighbour, neighbour2);
                             }
                         });
 
-                    if(!(neighbour instanceof ICollidable)){
+                    if(!(neighbour instanceof Collidable)){
                         connectTiles(air, neighbour);
                         connectTiles(neighbour,air);
                     }
@@ -526,6 +530,32 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
             });
         }
         getLayers(layer)[index] = air;
+    }
+
+
+
+
+    public Player createPlayer(boolean controlled){
+
+        Player player = new Player(getWorld(),this,tileSize,tileSize);
+
+        if(controlled) {
+            player.setControlled();
+            getScreen().inputHandler.addListener(player.inputHandler);
+        }
+
+        players.add(player);
+        getScreen().renderHandler.addListener(player.renderListener);
+        getScreen().updateHandler.addListener(player.updateListener);
+        return player;
+    }
+
+
+
+    public void addEnemy(Enemy enemy){
+        enemies.add(enemy);
+        getScreen().updateHandler.addListener(enemy.updateListener);
+        getScreen().renderHandler.addListener(enemy.renderListener);
     }
 
 
@@ -554,5 +584,9 @@ public class TileMap implements IInputOutput, IndexedGraph<TileMapObject> {
         render(inputArgs.batch,inputArgs.camera,inputArgs.delta);
     };
 
+
+    public void dispose(){
+        players.forEach(Player::dispose);
+    }
 
 }

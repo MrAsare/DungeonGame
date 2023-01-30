@@ -6,14 +6,14 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
-import com.dhassan.game.ICollidable;
-import com.dhassan.game.screens.PlayScreen;
+import com.dhassan.game.Collidable;
+import com.dhassan.game.screens.GameScreen;
 import com.dhassan.game.tilemanager.TileMap;
 import com.dhassan.game.utils.AsssetManager;
 import com.dhassan.game.utils.B2dUtil;
 
 
-public class TileSolid extends TileMapObject implements ICollidable{
+public class TileSolid extends TileMapObject implements Collidable {
     public Body getBody() {
         return body;
     }
@@ -51,9 +51,9 @@ public class TileSolid extends TileMapObject implements ICollidable{
 
     public void addBody(World world) {
         this.body = B2dUtil.createBody(world, BodyDef.BodyType.StaticBody);
-        B2dUtil.addRectangleFixture(body, PlayScreen.TILE_SIZE, PlayScreen.TILE_SIZE);
+        B2dUtil.addRectangleFixture(body, GameScreen.TILE_SIZE, GameScreen.TILE_SIZE);
         Vector2 vec = getMap().indexToPos(getIndex());
-        this.body.setTransform(vec.x + PlayScreen.TILE_SIZE / 2f, vec.y + PlayScreen.TILE_SIZE / 2f, 0);
+        this.body.setTransform(vec.x + GameScreen.TILE_SIZE / 2f, vec.y + GameScreen.TILE_SIZE / 2f, 0);
         this.body.setUserData(this);
     }
 

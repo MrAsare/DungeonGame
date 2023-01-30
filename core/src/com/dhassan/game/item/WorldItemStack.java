@@ -11,18 +11,18 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.World;
-import com.dhassan.game.ICollidable;
+import com.dhassan.game.Collidable;
 import com.dhassan.game.entity.Player;
-import com.dhassan.game.screens.PlayScreen;
+import com.dhassan.game.screens.GameScreen;
 import com.dhassan.game.tilemanager.TileMap;
 import com.dhassan.game.utils.B2dUtil;
 
-public class WorldItemStack extends ItemStack implements ICollidable {
+public class WorldItemStack extends ItemStack implements Collidable {
 
     private final float size;
     private final TileMap map;
     private final BitmapFont font;
-    private final float moveSpeed = PlayScreen.TILE_SIZE * 300f;
+    private final float moveSpeed = GameScreen.TILE_SIZE * 300f;
     private Body body;
     private boolean moveToPlayer = false;
     private Player player;
@@ -35,7 +35,7 @@ public class WorldItemStack extends ItemStack implements ICollidable {
     public WorldItemStack(TileMap map, Vector2 vec) {
         super(Item.CONVEYOR0);
         this.map = map;
-        this.size = PlayScreen.TILE_SIZE / 2f;
+        this.size = GameScreen.TILE_SIZE / 2f;
         font = new BitmapFont(Gdx.files.internal("font.fnt"));
         font.getData().setScale(size / 20f, size / 30f);
         font.setColor(Color.GREEN);

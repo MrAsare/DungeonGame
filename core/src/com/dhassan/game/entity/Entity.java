@@ -7,11 +7,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import com.dhassan.game.GameObject;
-import com.dhassan.game.ICollidable;
+import com.dhassan.game.Collidable;
 import com.dhassan.game.tilemanager.TileMap;
-import com.dhassan.game.tilemanager.tiles.IInputOutput;
+import com.dhassan.game.tilemanager.tiles.InputOutput;
 
-public abstract class Entity  extends GameObject implements ICollidable, IInputOutput {
+public abstract class Entity  extends GameObject implements Collidable, InputOutput {
 
     protected Body body;
     protected  Vector2 velocity;
@@ -84,9 +84,17 @@ public abstract class Entity  extends GameObject implements ICollidable, IInputO
     public void setVelocity(Vector2 vec){
         velocity = vec;
     }
+
+
+    public void setVelocity(float x, float y){
+        velocity.x = x;
+        velocity.y = y;
+    }
     public abstract void render(SpriteBatch batch, Camera camera, float delta);
 
-    public abstract void update(float dt);
+    public void update(float dt){
+        setIndex(tileMap.posToIndex(body.getPosition()));
+    }
 
     /**
      * Physics body that should be attached to this

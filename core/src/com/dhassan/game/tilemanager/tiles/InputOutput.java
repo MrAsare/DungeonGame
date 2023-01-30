@@ -2,7 +2,7 @@ package com.dhassan.game.tilemanager.tiles;
 
 import com.dhassan.game.item.ItemStack;
 
-public interface IInputOutput {
+public interface InputOutput {
 
     /**
      * Add an ItemStack into inventory of this
@@ -15,7 +15,7 @@ public interface IInputOutput {
      * @param out ItemStack out
      * @param in Target inventory
      */
-    void out(ItemStack out, IInputOutput in);
+    void out(ItemStack out, InputOutput in);
 
     /**
      * Open inventory
